@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube via Vercel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    .iframe-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="iframe-container">
+    <iframe id="player"
+      allow="autoplay; fullscreen"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <script>
+    function getVideoId(url) {
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+      return match ? match[1] : null;
+    }
+
+    const videoUrl = prompt("Masukkan URL YouTube:");
+    
+    if (videoUrl) {
+      const videoId = getVideoId(videoUrl);
+      
+      if (videoId) {
+        const player = document.getElementById('player');
+        // PAKE SERVICE YANG UDH DI-DEPLOY KE VERCEL
+        player.src = `https://lite-youtube-embed-iframe.vercel.app/embed/${videoId}?autoplay=1`;
+      } else {
+        alert("URL gak valid!");
+      }
+    }
+  </script>
+</body>
+</html>
