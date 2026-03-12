@@ -3,30 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube via Vercel</title>
+  <title>YouTube Fullscreen Vercel</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
-    .iframe-container {
-      position: relative;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    
+    /* CARA PALING BRUTAL BUAT FULLSCREEN */
+    .video-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
+      background: #000;
     }
-    .iframe-container iframe {
+    
+    iframe {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 100vh;
+      transform: translate(-50%, -50%);
+      border: none;
+      /* PENTING: BIKIN VIDEO COVER SELURUH LAYAR */
+      object-fit: cover;
+    }
+    
+    /* FALLBACK BUAT BROWSER LAMA */
+    @media (min-aspect-ratio: 16/9) {
+      iframe {
+        height: 56.25vw; /* 9/16 = 0.5625 */
+      }
+    }
+    
+    @media (max-aspect-ratio: 16/9) {
+      iframe {
+        width: 177.78vh; /* 16/9 = 1.7778 */
+      }
     }
   </style>
 </head>
 <body>
-  <div class="iframe-container">
+  <div class="video-wrapper">
     <iframe id="player"
-      allow="autoplay; fullscreen"
+      allow="autoplay; fullscreen; encrypted-media"
       allowfullscreen>
     </iframe>
   </div>
@@ -37,19 +69,34 @@
       return match ? match[1] : null;
     }
 
-    const videoUrl = prompt("Masukkan URL YouTube:");
-    
-    if (videoUrl) {
-      const videoId = getVideoId(videoUrl);
+    // LANGSUNG JALANIN TANPA PROMPT KALO ADA PARAMETER DI URL
+    function initPlayer() {
+      const params = new URLSearchParams(window.location.search);
+      let videoId = params.get('v');
+      
+      if (!videoId) {
+        const videoUrl = prompt("Masukkan URL YouTube:");
+        if (videoUrl) {
+          videoId = getVideoId(videoUrl);
+        }
+      }
       
       if (videoId) {
         const player = document.getElementById('player');
-        // PAKE SERVICE YANG UDH DI-DEPLOY KE VERCEL
-        player.src = `https://lite-youtube-embed-iframe.vercel.app/embed/${videoId}?autoplay=1`;
+        // PAKE YOUTUBE LANGSUNG, BUKAN SERVICE LAIN
+        player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+        
+        // TAMBAHKAN EVENT UNTUK PASTIKAN FULLSCREEN
+        player.onload = function() {
+          console.log('Video loaded, should be fullscreen');
+        };
       } else {
         alert("URL gak valid!");
       }
     }
+
+    // JALANKAN SETELAH HALAMAN LOAD
+    window.addEventListener('load', initPlayer);
   </script>
 </body>
 </html>
